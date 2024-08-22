@@ -1,23 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract SimpleCounter {
-    int public counter;
+contract ConditionChecks {
+    uint256 public value;
+    address public owner;
 
-    function increment() public {
-        counter++;
-        assert(counter > 0);
+    constructor() {
+        owner = msg.sender;
     }
 
-    function decrement() public {
-        require(counter > 0, "Counter is already zero or negative");
-        counter--;
+    function setValue(uint256 _value) public {
+        require(_value > 0, "Value must be greater than zero");
+        value = _value;
     }
 
-    function reset() public {
-        counter = 0;
-        if (counter != 0) {
-            revert("Counter reset failed");
+    function doubleValue() public {
+        uint256 doubledValue = value * 2;
+        assert(doubledValue / 2 == value);
+
+        value = doubledValue;
+    }
+
+    function resetValue() public {
+        if (msg.sender != owner) {
+            revert("Only the owner can reset the value");
         }
+
+        value = 0;
     }
 }

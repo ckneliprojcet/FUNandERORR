@@ -1,49 +1,87 @@
-# SimpleCounter Smart Contract
+# ConditionChecks Smart Contract
 
-This project implements a basic Solidity smart contract called `SimpleCounter`. The contract manages a simple integer counter that can be incremented, decremented, and reset. The contract demonstrates the use of Solidity's error handling mechanisms, including `require()`, `assert()`, and `revert()`.
+## Overview
+
+The `ConditionChecks` smart contract demonstrates the use of Solidity's `require()`, `assert()`, and `revert()` statements. These statements are essential for controlling the flow of the contract, ensuring that certain conditions are met, and handling errors in a robust manner.
 
 ## Features
 
-- **Increment Counter:** Increases the counter by 1.
-- **Decrement Counter:** Decreases the counter by 1, but only if the counter is greater than zero.
-- **Reset Counter:** Resets the counter to zero.
+- **Set Value**: Users can set a value that must be greater than zero.
+- **Double Value**: The value can be doubled, with an internal check to prevent overflow.
+- **Reset Value**: The owner of the contract can reset the value to zero.
 
-## Error Handling
+## Functions
 
-This contract uses the following error handling mechanisms:
+### 1. `setValue(uint256 _value)`
 
-- **`require()`**: Used in the `decrement()` function to ensure the counter is greater than zero before decrementing. If this condition is not met, the transaction is reverted with an appropriate error message.
+Sets the `value` variable to the input `_value`.
 
-- **`assert()`**: Used in the `increment()` function to ensure that the counter has been incremented correctly. If the assertion fails, it indicates an internal error, and the transaction is reverted.
+- **Parameters**: 
+  - `_value`: A `uint256` number that must be greater than zero.
 
-- **`revert()`**: Explicitly used in the `reset()` function to revert the transaction if the counter does not reset to zero for any reason.
+- **Require Condition**:
+  - The function uses `require()` to ensure `_value` is greater than zero.
+  - If the condition is not met, the transaction is reverted with the error message "Value must be greater than zero".
+
+### 2. `doubleValue()`
+
+Doubles the current `value` stored in the contract.
+
+- **Assert Condition**:
+  - The function uses `assert()` to check that doubling the value does not cause an overflow.
+  - If the assertion fails, the transaction is reverted.
+
+### 3. `resetValue()`
+
+Resets the `value` variable to zero. Only the owner of the contract can perform this action.
+
+- **Revert Condition**:
+  - The function uses `revert()` to stop the execution and revert the transaction if the caller is not the contract owner.
+  - The error message returned is "Only the owner can reset the value".
+
+## Deployment
+
+To deploy the `ConditionChecks` contract:
+
+1. Install a development environment like [Remix](https://remix.ethereum.org/) or use tools like Truffle or Hardhat.
+2. Compile the contract with a Solidity compiler version `^0.8.0`.
+3. Deploy the contract to your preferred Ethereum network.
 
 ## Usage
 
-### Increment the Counter
+### Set a Value
+
+contractInstance.setValue(10);
 
 ```js
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract SimpleCounter {
-    int public counter;
+contract ConditionChecks {
+    uint256 public value;
+    address public owner;
 
-    function increment() public {
-        counter++;
-        assert(counter > 0);
+    constructor() {
+        owner = msg.sender;
     }
 
-    function decrement() public {
-        require(counter > 0, "Counter is already zero or negative");
-        counter--;
+    function setValue(uint256 _value) public {
+        require(_value > 0, "Value must be greater than zero");
+        value = _value;
     }
 
-    function reset() public {
-        counter = 0;
-        if (counter != 0) {
-            revert("Counter reset failed");
+    function doubleValue() public {
+        uint256 doubledValue = value * 2;
+        assert(doubledValue / 2 == value);
+
+        value = doubledValue;
+    }
+
+    function resetValue() public {
+        if (msg.sender != owner) {
+            revert("Only the owner can reset the value");
         }
+
+        value = 0;
     }
 }
-,,,
